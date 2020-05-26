@@ -19,6 +19,7 @@ apply plugin: 'io.spring.dependency-management' //이코드는 스프링 부트�
 
 group 'com.example'
 version '1.0-SNAPSHOT'
+sourceCompatibility=1.8
 
 repositories { //repository는 각종 의존성(라이브러리)들을 어떤 원격 저장소에서 받을 지를 정해줌.
     mavenCentral()
@@ -27,5 +28,7 @@ repositories { //repository는 각종 의존성(라이브러리)들을 어떤 �
 dependencies {
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.projectlombok:lombok')
+    compile('org.springframework.boot:spring-boot-starter-data-jpa')
+    compile('com.h2database:h2')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
