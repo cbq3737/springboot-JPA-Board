@@ -3,6 +3,7 @@ package com.example.springboot.web;
 import com.example.springboot.domain.posts.Posts;
 import com.example.springboot.domain.posts.PostsRepository;
 import com.example.springboot.web.dto.PostsSaveRequestDto;
+import com.example.springboot.web.dto.PostsUpdateRequestDto;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -24,7 +27,9 @@ public class PostsApiControllerTest {
     @LocalServerPort
     private int port;
 
-    //RestTemplate : Spring 3부터 지원 되었고 REST API 호출이후 응답을 받을 때까지 기다리는 동기방식
+    //RestTemplate : Spring 3부터 지원 되었고 REST API 호출이후 응답을 받을 때까지 기다리는 동기방식,
+    //여기서 말하는 HttpEntity는 형식임, 그안에 들어있는 Head,status,body를 보고 판단하는 형식임.
+    //하나의 관계 매핑 그래서 이름 ORM임.obeject Relation Mapping ->그래서 DB에 Entity가 있으면 테이블을 나타내주는것이었음.
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -48,7 +53,7 @@ public class PostsApiControllerTest {
                 .build();
         String url = "http://localhost:"+ port + "/api/v1/posts";
 
-        //when,ResponseEntity는 HttpEntity를 상속받음으로써 HttpHeader와 body를 가질 수 있다
+        //when,ResponseEntity는 HttpEntity를 상속받음으로써 HttpHeader와 body,status를 갖고온다.
         ResponseEntity<Long> responseEntity = restTemplate.postForEntity(url,requestDto,Long.class);//postForEntity:POST 요청을 보내고 결과로 ResponseEntity로 반환받는다
 
         //then,assertThat: 두 값 비교
@@ -58,5 +63,33 @@ public class PostsApiControllerTest {
         List<Posts> all = postsRepository.findAll();
         assertThat(all.get(0).getTitle()).isEqualTo(title);
         assertThat(all.get(0).getContent()).isEqualTo(content);
+    }
+
+    @Test
+    public void Posts_수정된다() throws Exception{
+        //given = 기존에 있을 데이터
+        Posts savedPosts = postsRepository.save(Posts.builder().title("title").content("content").author("author").build());
+
+        Long updateId =savedPosts.getId();
+        String expectedTitle="title2";
+        String expectedContent ="content2";
+
+        //변경할 Dto
+        PostsUpdateRequestDto requestDto = PostsUpdateRequestDto.builder().title(expectedTitle).content(expectedContent).build();
+        String url = "http://localhost:"+ port + "/api/v1/posts/"+ updateId;
+
+        HttpEntity<PostsUpdateRequestDto> requestEntity = new HttpEntity<>(requestDto);
+
+        //When
+        ResponseEntity<Long> responseEntity = restTemplate.exchange(url,HttpMethod.POST,requestEntity,Long.class);//위에 postForEntity랑 다른 이유는 받는 인자가 다르기 때문에
+
+        //then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isGreaterThan(0L);
+
+        List<Posts> all = postsRepository.findAll();
+
+        assertThat(all.get(0).getTitle()).isEqualTo(expectedTitle);
+        assertThat(all.get(0).getContent()).isEqualTo(expectedContent);
     }
 }

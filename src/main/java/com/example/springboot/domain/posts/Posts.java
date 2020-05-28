@@ -1,5 +1,6 @@
 package com.example.springboot.domain.posts;
 
+import com.example.springboot.domain.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,11 +11,11 @@ import javax.persistence.*;
 //필드값 변경 메소드를 만들때 인스턴스값을 주지않는다.
 @Getter
 @NoArgsConstructor
-@Entity//Posts.java이므로 posts table일듯, 이런식으로 매칭해준다.
-public class Posts {
+@Entity//Posts.java이므로 posts table일듯, 이런식으로 매칭해준다.Entity는 DB에 이런 테이블이 있다고 알려주는 역할.
+public class Posts extends BaseTimeEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id//PrimaryKey
+    @GeneratedValue(strategy = GenerationType.IDENTITY)//GenerationType.IDENTITY덕분에 Auto_increment
     private Long id;
 
     @Column (length =500 , nullable = false)
